@@ -4,11 +4,13 @@ import { Eye, EyeOff, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import vroomoLogo from "@/assets/vroomo-logo.png";
 
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [userType, setUserType] = useState<"customer" | "mechanic">("customer");
   const [isLoading, setIsLoading] = useState(false);
@@ -23,6 +25,13 @@ const Login = () => {
 
     // Simulate login
     await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Login user
+    login({
+      email: formData.email,
+      name: formData.email.split("@")[0],
+      userType: userType,
+    });
 
     toast({
       title: "Login Successful!",
@@ -145,7 +154,7 @@ const Login = () => {
       </div>
 
       {/* Right Side - Image/Pattern */}
-      <div className="hidden lg:flex flex-1 hero-gradient items-center justify-center p-12 relative overflow-hidden">
+      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 items-center justify-center p-12 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
@@ -153,11 +162,13 @@ const Login = () => {
         </div>
 
         <div className="relative z-10 text-center max-w-md">
-          <img src={vroomoLogo} alt="VROOMO" className="h-32 w-auto mx-auto mb-8 brightness-0 invert" />
-          <h2 className="text-3xl font-display font-bold text-primary-foreground mb-4">
+          <div className="w-48 h-48 bg-white rounded-full mx-auto mb-8 flex items-center justify-center shadow-2xl">
+            <img src={vroomoLogo} alt="VROOMO" className="w-36 h-auto" />
+          </div>
+          <h2 className="text-3xl font-display font-bold text-white mb-4">
             Roadside Assistance Made <span className="text-primary">Simple</span>
           </h2>
-          <p className="text-primary-foreground/70">
+          <p className="text-white/60">
             Get instant help from verified mechanics near you. Track them in real-time and get back on the road faster.
           </p>
         </div>

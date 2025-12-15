@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import vroomoLogo from "@/assets/vroomo-logo.png";
 
 const Signup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [userType, setUserType] = useState<"customer" | "mechanic">("customer");
   const [isLoading, setIsLoading] = useState(false);
@@ -42,6 +44,13 @@ const Signup = () => {
     setIsLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
+    // Login the user after successful signup
+    login({
+      email: formData.email,
+      name: formData.name,
+      userType: userType,
+    });
+
     toast({
       title: "Account Created!",
       description: userType === "mechanic" 
@@ -50,7 +59,7 @@ const Signup = () => {
     });
 
     setIsLoading(false);
-    navigate("/login");
+    navigate("/");
   };
 
   return (
