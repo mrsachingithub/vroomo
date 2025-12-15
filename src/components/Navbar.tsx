@@ -1,12 +1,15 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Phone } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X, Phone, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import vroomoLogo from "@/assets/vroomo-logo.png";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -15,6 +18,11 @@ const Navbar = () => {
   ];
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
@@ -42,18 +50,42 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Right Side - Logo + Auth Buttons */}
+          {/* Right Side - Auth Buttons or User Menu */}
           <div className="hidden md:flex items-center gap-4">
-            <Link to="/login">
-              <Button variant="ghost" className="font-display uppercase tracking-wider">
-                Login
-              </Button>
-            </Link>
-            <Link to="/signup">
-              <Button variant="hero" size="lg">
-                Sign Up
-              </Button>
-            </Link>
+            {isAuthenticated && user ? (
+              <>
+                <Link to="/request-mechanic">
+                  <Button variant="hero" size="lg">
+                    Request Mechanic
+                  </Button>
+                </Link>
+                <div className="flex items-center gap-3 bg-secondary px-4 py-2 rounded-lg">
+                  <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                    <User size={18} className="text-primary-foreground" />
+                  </div>
+                  <div className="text-sm">
+                    <p className="font-semibold text-foreground">{user.name || user.email}</p>
+                    <p className="text-muted-foreground text-xs capitalize">{user.userType}</p>
+                  </div>
+                </div>
+                <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout">
+                  <LogOut size={20} />
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost" className="font-display uppercase tracking-wider">
+                    Login
+                  </Button>
+                </Link>
+                <Link to="/signup">
+                  <Button variant="hero" size="lg">
+                    Sign Up
+                  </Button>
+                </Link>
+              </>
+            )}
             <img src={vroomoLogo} alt="VROOMO" className="h-12 w-auto" />
           </div>
 
@@ -84,16 +116,41 @@ const Navbar = () => {
               </Link>
             ))}
             <div className="flex flex-col gap-3 pt-4 border-t border-border">
-              <Link to="/login" onClick={() => setIsOpen(false)}>
-                <Button variant="outline" className="w-full font-display uppercase">
-                  Login
-                </Button>
-              </Link>
-              <Link to="/signup" onClick={() => setIsOpen(false)}>
-                <Button variant="hero" className="w-full">
-                  Sign Up
-                </Button>
-              </Link>
+              {isAuthenticated && user ? (
+                <>
+                  <div className="flex items-center gap-3 bg-secondary px-4 py-3 rounded-lg">
+                    <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                      <User size={20} className="text-primary-foreground" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">{user.name || user.email}</p>
+                      <p className="text-muted-foreground text-sm capitalize">{user.userType}</p>
+                    </div>
+                  </div>
+                  <Link to="/request-mechanic" onClick={() => setIsOpen(false)}>
+                    <Button variant="hero" className="w-full">
+                      Request Mechanic
+                    </Button>
+                  </Link>
+                  <Button variant="outline" className="w-full" onClick={() => { handleLogout(); setIsOpen(false); }}>
+                    <LogOut size={18} className="mr-2" />
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" onClick={() => setIsOpen(false)}>
+                    <Button variant="outline" className="w-full font-display uppercase">
+                      Login
+                    </Button>
+                  </Link>
+                  <Link to="/signup" onClick={() => setIsOpen(false)}>
+                    <Button variant="hero" className="w-full">
+                      Sign Up
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
             <a
               href="tel:7488768874"
