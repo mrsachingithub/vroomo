@@ -2,10 +2,22 @@ import { Link } from "react-router-dom";
 import { MapPin, Clock, Shield, ChevronRight, Wrench, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import vroomoLogo from "@/assets/vroomo-logo.png";
 
 const Hero = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, userRole } = useAuth();
+
+  // Determine the CTA based on role
+  const getCtaLink = () => {
+    if (!isAuthenticated) return "/signup";
+    if (userRole === "mechanic") return "/mechanic-dashboard";
+    return "/request-mechanic";
+  };
+
+  const getCtaText = () => {
+    if (!isAuthenticated) return "Get Started";
+    if (userRole === "mechanic") return "Go to Dashboard";
+    return "Request Mechanic";
+  };
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -23,92 +35,57 @@ const Hero = () => {
       }} />
 
       <div className="container mx-auto px-4 pt-24 pb-16 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Content */}
-          <div className="text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white px-5 py-2.5 rounded-full mb-8 border border-white/10 animate-fade-in">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-sm font-medium">24/7 Emergency Service Available</span>
-            </div>
-
-            <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-bold text-white mb-6 leading-tight animate-slide-up">
-              Your Vehicle's{" "}
-              <span className="text-primary relative">
-                Lifeline
-                <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
-                  <path d="M2 10C50 4 150 4 198 10" stroke="hsl(var(--primary))" strokeWidth="3" strokeLinecap="round" />
-                </svg>
-              </span>{" "}
-              <span className="block mt-2">on Every Road</span>
-            </h1>
-
-            <p className="text-lg md:text-xl text-white/60 max-w-xl mx-auto lg:mx-0 mb-10 animate-slide-up" style={{ animationDelay: "0.1s" }}>
-              On-road and off-road mechanic services for cars, buses, and trucks. 
-              Get instant help wherever you are, whenever you need it.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-slide-up" style={{ animationDelay: "0.2s" }}>
-              <Link to={isAuthenticated ? "/request-mechanic" : "/signup"}>
-                <Button variant="hero" size="xl" className="w-full sm:w-auto group">
-                  <Users size={20} />
-                  Get Started
-                  <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-              <Link to="/services">
-                <Button variant="heroOutline" size="xl" className="w-full sm:w-auto">
-                  <Wrench size={20} />
-                  Our Services
-                </Button>
-              </Link>
-            </div>
-
-            {/* Trust Indicators */}
-            <div className="flex flex-wrap gap-6 mt-12 justify-center lg:justify-start animate-slide-up" style={{ animationDelay: "0.3s" }}>
-              <div className="flex items-center gap-2 text-white/50 text-sm">
-                <Shield size={16} className="text-green-500" />
-                <span>Verified Mechanics</span>
-              </div>
-              <div className="flex items-center gap-2 text-white/50 text-sm">
-                <Clock size={16} className="text-primary" />
-                <span>Fast Response</span>
-              </div>
-              <div className="flex items-center gap-2 text-white/50 text-sm">
-                <MapPin size={16} className="text-blue-400" />
-                <span>50+ Cities</span>
-              </div>
-            </div>
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white px-5 py-2.5 rounded-full mb-8 border border-white/10 animate-fade-in">
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            <span className="text-sm font-medium">24/7 Emergency Service Available</span>
           </div>
 
-          {/* Right Content - Logo in Circle */}
-          <div className="flex justify-center lg:justify-end animate-slide-in-right">
-            <div className="relative">
-              {/* Outer glow */}
-              <div className="absolute inset-0 bg-primary/30 rounded-full blur-3xl scale-110" />
-              
-              {/* Main circle with logo */}
-              <div className="relative w-72 h-72 md:w-96 md:h-96 bg-white rounded-full flex items-center justify-center shadow-2xl shadow-black/30">
-                <img 
-                  src={vroomoLogo} 
-                  alt="VROOMO" 
-                  className="w-48 md:w-64 h-auto object-contain"
-                />
-              </div>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-bold text-white mb-6 leading-tight animate-slide-up">
+            Your Vehicle's{" "}
+            <span className="text-primary relative">
+              Lifeline
+              <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
+                <path d="M2 10C50 4 150 4 198 10" stroke="hsl(var(--primary))" strokeWidth="3" strokeLinecap="round" />
+              </svg>
+            </span>{" "}
+            <span className="block mt-2">on Every Road</span>
+          </h1>
 
-              {/* Floating badges */}
-              <div className="absolute -top-4 -right-4 bg-white rounded-xl px-4 py-3 shadow-xl animate-float">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full" />
-                  <span className="font-semibold text-slate-800 text-sm">500+ Mechanics</span>
-                </div>
-              </div>
+          <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto mb-10 animate-slide-up" style={{ animationDelay: "0.1s" }}>
+            On-road and off-road mechanic services for cars, buses, and trucks. 
+            Get instant help wherever you are, whenever you need it.
+          </p>
 
-              <div className="absolute -bottom-4 -left-4 bg-white rounded-xl px-4 py-3 shadow-xl animate-float" style={{ animationDelay: "0.5s" }}>
-                <div className="flex items-center gap-2">
-                  <Clock size={16} className="text-primary" />
-                  <span className="font-semibold text-slate-800 text-sm">24/7 Service</span>
-                </div>
-              </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up" style={{ animationDelay: "0.2s" }}>
+            <Link to={getCtaLink()}>
+              <Button variant="hero" size="xl" className="w-full sm:w-auto group">
+                <Users size={20} />
+                {getCtaText()}
+                <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+            <Link to="/services">
+              <Button variant="heroOutline" size="xl" className="w-full sm:w-auto">
+                <Wrench size={20} />
+                Our Services
+              </Button>
+            </Link>
+          </div>
+
+          {/* Trust Indicators */}
+          <div className="flex flex-wrap gap-6 mt-12 justify-center animate-slide-up" style={{ animationDelay: "0.3s" }}>
+            <div className="flex items-center gap-2 text-white/50 text-sm">
+              <Shield size={16} className="text-green-500" />
+              <span>Verified Mechanics</span>
+            </div>
+            <div className="flex items-center gap-2 text-white/50 text-sm">
+              <Clock size={16} className="text-primary" />
+              <span>Fast Response</span>
+            </div>
+            <div className="flex items-center gap-2 text-white/50 text-sm">
+              <MapPin size={16} className="text-blue-400" />
+              <span>50+ Cities</span>
             </div>
           </div>
         </div>
