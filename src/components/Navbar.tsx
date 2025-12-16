@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Phone, User, LogOut } from "lucide-react";
+import { Menu, X, Phone, User, LogOut, Bell, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import vroomoLogo from "@/assets/vroomo-logo.png";
@@ -9,7 +9,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, profile, userRole, isAuthenticated, signOut } = useAuth();
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -19,10 +19,12 @@ const Navbar = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await signOut();
     navigate("/");
   };
+
+  const displayName = profile?.name || user?.email?.split("@")[0] || "User";
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
@@ -54,18 +56,30 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-4">
             {isAuthenticated && user ? (
               <>
-                <Link to="/request-mechanic">
-                  <Button variant="hero" size="lg">
-                    Request Mechanic
-                  </Button>
-                </Link>
+                {/* Role-specific button */}
+                {userRole === "customer" && (
+                  <Link to="/request-mechanic">
+                    <Button variant="hero" size="lg">
+                      Request Mechanic
+                    </Button>
+                  </Link>
+                )}
+                {userRole === "mechanic" && (
+                  <Link to="/mechanic-dashboard">
+                    <Button variant="hero" size="lg">
+                      <LayoutDashboard size={18} className="mr-2" />
+                      Dashboard
+                    </Button>
+                  </Link>
+                )}
+                
                 <div className="flex items-center gap-3 bg-secondary px-4 py-2 rounded-lg">
                   <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                     <User size={18} className="text-primary-foreground" />
                   </div>
                   <div className="text-sm">
-                    <p className="font-semibold text-foreground">{user.name || user.email}</p>
-                    <p className="text-muted-foreground text-xs capitalize">{user.userType}</p>
+                    <p className="font-semibold text-foreground">{displayName}</p>
+                    <p className="text-muted-foreground text-xs capitalize">{userRole}</p>
                   </div>
                 </div>
                 <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout">
@@ -86,7 +100,6 @@ const Navbar = () => {
                 </Link>
               </>
             )}
-            <img src={vroomoLogo} alt="VROOMO" className="h-12 w-auto" />
           </div>
 
           {/* Mobile Menu Button */}
@@ -123,15 +136,28 @@ const Navbar = () => {
                       <User size={20} className="text-primary-foreground" />
                     </div>
                     <div>
-                      <p className="font-semibold text-foreground">{user.name || user.email}</p>
-                      <p className="text-muted-foreground text-sm capitalize">{user.userType}</p>
+                      <p className="font-semibold text-foreground">{displayName}</p>
+                      <p className="text-muted-foreground text-sm capitalize">{userRole}</p>
                     </div>
                   </div>
-                  <Link to="/request-mechanic" onClick={() => setIsOpen(false)}>
-                    <Button variant="hero" className="w-full">
-                      Request Mechanic
-                    </Button>
-                  </Link>
+                  
+                  {/* Role-specific button */}
+                  {userRole === "customer" && (
+                    <Link to="/request-mechanic" onClick={() => setIsOpen(false)}>
+                      <Button variant="hero" className="w-full">
+                        Request Mechanic
+                      </Button>
+                    </Link>
+                  )}
+                  {userRole === "mechanic" && (
+                    <Link to="/mechanic-dashboard" onClick={() => setIsOpen(false)}>
+                      <Button variant="hero" className="w-full">
+                        <LayoutDashboard size={18} className="mr-2" />
+                        Dashboard
+                      </Button>
+                    </Link>
+                  )}
+                  
                   <Button variant="outline" className="w-full" onClick={() => { handleLogout(); setIsOpen(false); }}>
                     <LogOut size={18} className="mr-2" />
                     Logout

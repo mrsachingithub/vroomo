@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,36 +10,47 @@ import vroomoLogo from "@/assets/vroomo-logo.png";
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { login } = useAuth();
+  const { signIn, isAuthenticated, userRole, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [userType, setUserType] = useState<"customer" | "mechanic">("customer");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      // Redirect based on role
+      if (userRole === "mechanic") {
+        navigate("/mechanic-dashboard");
+      } else {
+        navigate("/");
+      }
+    }
+  }, [isAuthenticated, userRole, isLoading, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
 
-    // Simulate login
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const { error } = await signIn(formData.email, formData.password);
 
-    // Login user
-    login({
-      email: formData.email,
-      name: formData.email.split("@")[0],
-      userType: userType,
-    });
+    if (error) {
+      toast({
+        title: "Login Failed",
+        description: error.message || "Invalid email or password",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
 
     toast({
       title: "Login Successful!",
-      description: `Welcome back! You're logged in as a ${userType}.`,
+      description: "Welcome back!",
     });
 
-    setIsLoading(false);
-    navigate("/");
+    setIsSubmitting(false);
   };
 
   return (
@@ -55,34 +66,8 @@ const Login = () => {
             Welcome Back
           </h1>
           <p className="text-muted-foreground mb-8">
-            Login to access your {userType} dashboard
+            Login to access your dashboard
           </p>
-
-          {/* User Type Toggle */}
-          <div className="flex bg-secondary rounded-lg p-1 mb-8">
-            <button
-              type="button"
-              onClick={() => setUserType("customer")}
-              className={`flex-1 py-3 rounded-md font-display font-semibold text-sm uppercase tracking-wider transition-all ${
-                userType === "customer"
-                  ? "bg-primary text-primary-foreground shadow"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Customer
-            </button>
-            <button
-              type="button"
-              onClick={() => setUserType("mechanic")}
-              className={`flex-1 py-3 rounded-md font-display font-semibold text-sm uppercase tracking-wider transition-all ${
-                userType === "mechanic"
-                  ? "bg-primary text-primary-foreground shadow"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Mechanic
-            </button>
-          </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
@@ -137,9 +122,9 @@ const Login = () => {
               variant="hero"
               size="xl"
               className="w-full"
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
-              {isLoading ? "Logging in..." : "Login"}
+              {isSubmitting ? "Logging in..." : "Login"}
               <LogIn size={20} />
             </Button>
           </form>

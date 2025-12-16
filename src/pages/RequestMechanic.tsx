@@ -1,20 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, Car, Bus, Truck, Wrench, Battery, CircleDot, Settings, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const RequestMechanic = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { isAuthenticated } = useAuth();
+  const { user, userRole, isAuthenticated, isLoading } = useAuth();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requestSubmitted, setRequestSubmitted] = useState(false);
+  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   const [formData, setFormData] = useState({
     vehicleType: "",
     issueType: "",
@@ -22,6 +24,25 @@ const RequestMechanic = () => {
     location: "",
     vehicleNumber: "",
   });
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        navigate("/login");
+        return;
+      }
+      // Only customers can request mechanics
+      if (userRole === "mechanic") {
+        toast({
+          title: "Access Denied",
+          description: "Mechanics cannot request other mechanics.",
+          variant: "destructive",
+        });
+        navigate("/mechanic-dashboard");
+        return;
+      }
+    }
+  }, [isAuthenticated, userRole, isLoading, navigate, toast]);
 
   const vehicleTypes = [
     { id: "car", label: "Car", icon: Car },
@@ -42,6 +63,7 @@ const RequestMechanic = () => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
+          setCoordinates({ lat: latitude, lng: longitude });
           setFormData({ ...formData, location: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}` });
           toast({
             title: "Location Detected",
@@ -69,23 +91,55 @@ const RequestMechanic = () => {
       return;
     }
 
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login to submit a request.",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
+
     setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    
+
+    const { error } = await supabase.from("mechanic_requests").insert({
+      customer_id: user.id,
+      vehicle_type: formData.vehicleType,
+      issue_type: formData.issueType,
+      issue_description: formData.description || null,
+      location: formData.location,
+      latitude: coordinates?.lat || null,
+      longitude: coordinates?.lng || null,
+      status: "pending",
+    });
+
+    if (error) {
+      console.error("Error submitting request:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit request. Please try again.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
     setIsSubmitting(false);
     setRequestSubmitted(true);
-    
+
     toast({
       title: "Request Submitted!",
       description: "Nearby mechanics are being notified. You'll receive updates shortly.",
     });
   };
 
-  if (!isAuthenticated) {
-    navigate("/login");
-    return null;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   if (requestSubmitted) {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, UserPlus, Car, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,10 +11,10 @@ import vroomoLogo from "@/assets/vroomo-logo.png";
 const Signup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { login } = useAuth();
+  const { signUp, isAuthenticated, userRole, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [userType, setUserType] = useState<"customer" | "mechanic">("customer");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -24,10 +24,19 @@ const Signup = () => {
     vehicleType: "",
     password: "",
     confirmPassword: "",
-    // Mechanic specific
     specialization: "",
     experience: "",
   });
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      if (userRole === "mechanic") {
+        navigate("/mechanic-dashboard");
+      } else {
+        navigate("/");
+      }
+    }
+  }, [isAuthenticated, userRole, isLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,15 +50,45 @@ const Signup = () => {
       return;
     }
 
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    if (formData.password.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    // Login the user after successful signup
-    login({
-      email: formData.email,
+    setIsSubmitting(true);
+
+    const metadata = {
       name: formData.name,
-      userType: userType,
-    });
+      phone: formData.mobile,
+      user_type: userType,
+      vehicle_number: userType === "customer" ? formData.vehicleNumber : null,
+      vehicle_type: userType === "customer" ? formData.vehicleType : null,
+      specialization: userType === "mechanic" ? formData.specialization : null,
+      experience_years: userType === "mechanic" ? parseInt(formData.experience) || null : null,
+    };
+
+    const { error } = await signUp(formData.email, formData.password, metadata);
+
+    if (error) {
+      let errorMessage = "Failed to create account";
+      if (error.message?.includes("already registered")) {
+        errorMessage = "This email is already registered. Please login instead.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast({
+        title: "Signup Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
 
     toast({
       title: "Account Created!",
@@ -58,8 +97,7 @@ const Signup = () => {
         : "Welcome to VROOMO! You can now request mechanics.",
     });
 
-    setIsLoading(false);
-    navigate("/");
+    setIsSubmitting(false);
   };
 
   return (
@@ -208,7 +246,6 @@ const Signup = () => {
                     placeholder="e.g., JH-05-AB-1234"
                     value={formData.vehicleNumber}
                     onChange={(e) => setFormData({ ...formData, vehicleNumber: e.target.value })}
-                    required
                     className="h-12"
                   />
                 </div>
@@ -264,7 +301,6 @@ const Signup = () => {
                     placeholder="Years"
                     value={formData.experience}
                     onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
-                    required
                     className="h-12"
                     min="0"
                   />
@@ -279,11 +315,12 @@ const Signup = () => {
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
-                  placeholder="Create a password"
+                  placeholder="Create a password (min 6 characters)"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   required
                   className="h-12 pr-12"
+                  minLength={6}
                 />
                 <button
                   type="button"
@@ -330,9 +367,9 @@ const Signup = () => {
               variant="hero"
               size="xl"
               className="w-full"
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
-              {isLoading ? "Creating Account..." : "Create Account"}
+              {isSubmitting ? "Creating Account..." : "Create Account"}
               <UserPlus size={20} />
             </Button>
           </form>
