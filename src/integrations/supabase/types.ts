@@ -106,6 +106,7 @@ export type Database = {
           email: string
           experience_years: number | null
           id: string
+          is_verified: boolean | null
           name: string
           phone: string | null
           specialization: string | null
@@ -113,12 +114,15 @@ export type Database = {
           user_id: string
           vehicle_number: string | null
           vehicle_type: string | null
+          verified_at: string | null
+          verified_by: string | null
         }
         Insert: {
           created_at?: string
           email: string
           experience_years?: number | null
           id?: string
+          is_verified?: boolean | null
           name: string
           phone?: string | null
           specialization?: string | null
@@ -126,12 +130,15 @@ export type Database = {
           user_id: string
           vehicle_number?: string | null
           vehicle_type?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Update: {
           created_at?: string
           email?: string
           experience_years?: number | null
           id?: string
+          is_verified?: boolean | null
           name?: string
           phone?: string | null
           specialization?: string | null
@@ -139,6 +146,8 @@ export type Database = {
           user_id?: string
           vehicle_number?: string | null
           vehicle_type?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Relationships: []
       }
