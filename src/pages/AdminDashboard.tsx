@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Users, Wrench, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { Users, Wrench, CheckCircle, Clock, AlertCircle, ShieldCheck, ShieldX } from "lucide-react";
 import { toast } from "sonner";
 
 interface MechanicProfile {
@@ -28,6 +28,8 @@ interface MechanicProfile {
   specialization: string | null;
   experience_years: number | null;
   created_at: string;
+  is_verified: boolean | null;
+  verified_at: string | null;
 }
 
 interface MechanicRequest {
@@ -157,8 +159,28 @@ const AdminDashboard = () => {
     return new Date(dateString).toLocaleString();
   };
 
+  const verifyMechanic = async (mechanicUserId: string, verified: boolean) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        is_verified: verified,
+        verified_at: verified ? new Date().toISOString() : null,
+        verified_by: verified ? user?.id : null,
+      })
+      .eq("user_id", mechanicUserId);
+
+    if (error) {
+      toast.error("Failed to update verification status");
+      return;
+    }
+
+    toast.success(verified ? "Mechanic verified successfully" : "Verification revoked");
+    fetchData();
+  };
+
   const stats = {
     totalMechanics: mechanics.length,
+    pendingVerification: mechanics.filter((m) => !m.is_verified).length,
     totalRequests: requests.length,
     pendingRequests: requests.filter((r) => r.status === "pending").length,
     completedRequests: requests.filter((r) => r.status === "completed").length,
@@ -179,7 +201,7 @@ const AdminDashboard = () => {
         <h1 className="text-3xl font-bold text-foreground mb-8">Admin Dashboard</h1>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
           <Card className="bg-card">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -188,6 +210,17 @@ const AdminDashboard = () => {
                   <p className="text-2xl font-bold text-foreground">{stats.totalMechanics}</p>
                 </div>
                 <Users className="h-8 w-8 text-primary" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-card">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Pending Verification</p>
+                  <p className="text-2xl font-bold text-orange-500">{stats.pendingVerification}</p>
+                </div>
+                <AlertCircle className="h-8 w-8 text-orange-500" />
               </div>
             </CardContent>
           </Card>
@@ -206,7 +239,7 @@ const AdminDashboard = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Pending</p>
+                  <p className="text-sm text-muted-foreground">Pending Requests</p>
                   <p className="text-2xl font-bold text-yellow-500">{stats.pendingRequests}</p>
                 </div>
                 <Clock className="h-8 w-8 text-yellow-500" />
@@ -250,7 +283,8 @@ const AdminDashboard = () => {
                         <TableHead>Phone</TableHead>
                         <TableHead>Specialization</TableHead>
                         <TableHead>Experience</TableHead>
-                        <TableHead>Joined</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -265,7 +299,42 @@ const AdminDashboard = () => {
                               ? `${mechanic.experience_years} years`
                               : "N/A"}
                           </TableCell>
-                          <TableCell>{formatDate(mechanic.created_at)}</TableCell>
+                          <TableCell>
+                            {mechanic.is_verified ? (
+                              <Badge className="bg-green-500 text-white">
+                                <ShieldCheck className="h-3 w-3 mr-1" />
+                                Verified
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-yellow-500 text-white">
+                                <AlertCircle className="h-3 w-3 mr-1" />
+                                Pending
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {mechanic.is_verified ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => verifyMechanic(mechanic.user_id, false)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <ShieldX className="h-4 w-4 mr-1" />
+                                Revoke
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => verifyMechanic(mechanic.user_id, true)}
+                                className="text-green-600 hover:text-green-700"
+                              >
+                                <ShieldCheck className="h-4 w-4 mr-1" />
+                                Verify
+                              </Button>
+                            )}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
