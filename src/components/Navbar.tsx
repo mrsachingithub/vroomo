@@ -56,19 +56,35 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-4">
             {isAuthenticated && user ? (
               <>
-                {/* Role-specific button */}
+              {/* Role-specific buttons */}
                 {userRole === "customer" && (
-                  <Link to="/request-mechanic">
-                    <Button variant="hero" size="lg">
-                      Request Mechanic
-                    </Button>
-                  </Link>
+                  <>
+                    <Link to="/customer-dashboard">
+                      <Button variant="ghost" size="lg">
+                        <LayoutDashboard size={18} className="mr-2" />
+                        My Dashboard
+                      </Button>
+                    </Link>
+                    <Link to="/request-mechanic">
+                      <Button variant="hero" size="lg">
+                        Request Mechanic
+                      </Button>
+                    </Link>
+                  </>
                 )}
                 {userRole === "mechanic" && (
                   <Link to="/mechanic-dashboard">
                     <Button variant="hero" size="lg">
                       <LayoutDashboard size={18} className="mr-2" />
                       Dashboard
+                    </Button>
+                  </Link>
+                )}
+                {userRole === "admin" && (
+                  <Link to="/admin-dashboard">
+                    <Button variant="hero" size="lg">
+                      <LayoutDashboard size={18} className="mr-2" />
+                      Admin Panel
                     </Button>
                   </Link>
                 )}
@@ -141,19 +157,35 @@ const Navbar = () => {
                     </div>
                   </div>
                   
-                  {/* Role-specific button */}
+                  {/* Role-specific buttons */}
                   {userRole === "customer" && (
-                    <Link to="/request-mechanic" onClick={() => setIsOpen(false)}>
-                      <Button variant="hero" className="w-full">
-                        Request Mechanic
-                      </Button>
-                    </Link>
+                    <>
+                      <Link to="/customer-dashboard" onClick={() => setIsOpen(false)}>
+                        <Button variant="outline" className="w-full">
+                          <LayoutDashboard size={18} className="mr-2" />
+                          My Dashboard
+                        </Button>
+                      </Link>
+                      <Link to="/request-mechanic" onClick={() => setIsOpen(false)}>
+                        <Button variant="hero" className="w-full">
+                          Request Mechanic
+                        </Button>
+                      </Link>
+                    </>
                   )}
                   {userRole === "mechanic" && (
                     <Link to="/mechanic-dashboard" onClick={() => setIsOpen(false)}>
                       <Button variant="hero" className="w-full">
                         <LayoutDashboard size={18} className="mr-2" />
                         Dashboard
+                      </Button>
+                    </Link>
+                  )}
+                  {userRole === "admin" && (
+                    <Link to="/admin-dashboard" onClick={() => setIsOpen(false)}>
+                      <Button variant="hero" className="w-full">
+                        <LayoutDashboard size={18} className="mr-2" />
+                        Admin Panel
                       </Button>
                     </Link>
                   )}
