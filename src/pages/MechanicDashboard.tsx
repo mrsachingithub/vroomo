@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, MapPin, Clock, CheckCircle, XCircle, Wrench, User, Phone } from "lucide-react";
+import { Bell, MapPin, Clock, CheckCircle, XCircle, Wrench, User, Phone, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -39,6 +39,7 @@ const MechanicDashboard = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [activeTab, setActiveTab] = useState<"pending" | "accepted" | "completed">("pending");
+  const [isVerified, setIsVerified] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || userRole !== "mechanic")) {
@@ -47,6 +48,7 @@ const MechanicDashboard = () => {
     }
 
     if (user) {
+      fetchMechanicProfile();
       fetchRequests();
       fetchNotifications();
       
@@ -77,6 +79,17 @@ const MechanicDashboard = () => {
       };
     }
   }, [user, userRole, isAuthenticated, isLoading, navigate]);
+
+  const fetchMechanicProfile = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select("is_verified")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    
+    setIsVerified(data?.is_verified ?? false);
+  };
 
   const fetchRequests = async () => {
     const { data, error } = await supabase
@@ -136,7 +149,7 @@ const MechanicDashboard = () => {
   };
 
   const acceptRequest = async (requestId: string) => {
-    if (!user) return;
+    if (!user || !isVerified) return;
 
     const { error } = await supabase
       .from("mechanic_requests")
@@ -285,6 +298,19 @@ const MechanicDashboard = () => {
             </div>
           </div>
 
+          {/* Verification Warning */}
+          {isVerified === false && (
+            <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-yellow-600">Account Pending Verification</p>
+                <p className="text-sm text-muted-foreground">
+                  Your account is awaiting admin verification. You cannot accept requests until verified.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Tabs */}
           <div className="flex gap-2 mb-6">
             {(["pending", "accepted", "completed"] as const).map((tab) => (
@@ -384,6 +410,8 @@ const MechanicDashboard = () => {
                         <Button
                           variant="hero"
                           onClick={() => acceptRequest(request.id)}
+                          disabled={!isVerified}
+                          title={!isVerified ? "Account pending verification" : undefined}
                         >
                           <CheckCircle size={18} className="mr-2" />
                           Accept
