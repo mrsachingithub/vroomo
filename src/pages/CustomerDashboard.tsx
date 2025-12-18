@@ -7,7 +7,9 @@ import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Clock, Wrench, Car, Phone, User } from "lucide-react";
+import { MapPin, Clock, Wrench, Car, Phone, User, Star } from "lucide-react";
+import RatingForm from "@/components/RatingForm";
+import MechanicTrackingMap from "@/components/MechanicTrackingMap";
 
 interface MechanicRequest {
   id: string;
@@ -19,12 +21,22 @@ interface MechanicRequest {
   created_at: string;
   updated_at: string;
   assigned_mechanic_id: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 interface MechanicProfile {
   name: string;
   phone: string | null;
   specialization: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
+interface Review {
+  id: string;
+  request_id: string;
+  rating: number;
 }
 
 const CustomerDashboard = () => {
@@ -32,6 +44,7 @@ const CustomerDashboard = () => {
   const navigate = useNavigate();
   const [requests, setRequests] = useState<MechanicRequest[]>([]);
   const [mechanicProfiles, setMechanicProfiles] = useState<Record<string, MechanicProfile>>({});
+  const [reviews, setReviews] = useState<Record<string, Review>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -43,6 +56,7 @@ const CustomerDashboard = () => {
   useEffect(() => {
     if (user && userRole === "customer") {
       fetchRequests();
+      fetchReviews();
       
       const channel = supabase
         .channel("customer-requests")
@@ -65,6 +79,22 @@ const CustomerDashboard = () => {
       };
     }
   }, [user, userRole]);
+
+  const fetchReviews = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("reviews" as any)
+      .select("id, request_id, rating")
+      .eq("customer_id", user.id) as any;
+    
+    if (data) {
+      const reviewMap: Record<string, Review> = {};
+      (data as Review[]).forEach((r) => {
+        reviewMap[r.request_id] = r;
+      });
+      setReviews(reviewMap);
+    }
+  };
 
   const fetchRequests = async () => {
     if (!user) return;
@@ -210,6 +240,19 @@ const CustomerDashboard = () => {
                     </div>
                   </div>
                 )}
+
+                {/* Real-time Map Tracking */}
+                {currentRequest.assigned_mechanic_id && currentRequest.latitude && currentRequest.longitude && (
+                  <div className="mt-4">
+                    <h3 className="font-semibold text-foreground mb-2">Track Mechanic</h3>
+                    <MechanicTrackingMap
+                      customerLat={currentRequest.latitude}
+                      customerLng={currentRequest.longitude}
+                      mechanicLat={mechanicProfiles[currentRequest.assigned_mechanic_id]?.latitude}
+                      mechanicLng={mechanicProfiles[currentRequest.assigned_mechanic_id]?.longitude}
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </section>
@@ -241,7 +284,7 @@ const CustomerDashboard = () => {
               {pastRequests.map((request) => (
                 <Card key={request.id} className="bg-card">
                   <CardContent className="py-4">
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start mb-3">
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <Wrench className="h-4 w-4 text-primary" />
@@ -264,6 +307,36 @@ const CustomerDashboard = () => {
                       </div>
                       {getStatusBadge(request.status)}
                     </div>
+                    
+                    {/* Rating Section for Completed Requests */}
+                    {request.status === "completed" && request.assigned_mechanic_id && (
+                      <div className="mt-4 pt-4 border-t border-border">
+                        {reviews[request.id] ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">Your rating:</span>
+                            <div className="flex">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`h-5 w-5 ${
+                                    star <= reviews[request.id].rating
+                                      ? "fill-yellow-400 text-yellow-400"
+                                      : "text-muted-foreground"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <RatingForm
+                            requestId={request.id}
+                            mechanicId={request.assigned_mechanic_id}
+                            customerId={user!.id}
+                            onSubmitted={fetchReviews}
+                          />
+                        )}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}
