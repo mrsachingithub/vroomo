@@ -1,90 +1,112 @@
 import { Link } from "react-router-dom";
-import { Mail, Phone, MapPin, Instagram } from "lucide-react";
+import { Mail, Phone, MapPin, Instagram, ArrowUpRight } from "lucide-react";
 import vroomoLogo from "@/assets/vroomo-logo.png";
 
 const Footer = () => {
   return (
-    <footer className="bg-accent text-accent-foreground">
-      <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+    <footer className="bg-accent text-accent-foreground relative overflow-hidden">
+      {/* Top Border Gradient */}
+      <div className="h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
+      
+      <div className="container mx-auto px-4 py-16 md:py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           {/* Logo & About */}
-          <div className="space-y-4">
-            <img src={vroomoLogo} alt="VROOMO" className="h-20 w-auto brightness-0 invert" />
-            <p className="text-accent-foreground/70 text-sm leading-relaxed">
-              Your trusted partner for on-road and off-road mechanic services. Available 24/7 across multiple cities.
+          <div className="lg:col-span-1">
+            <Link to="/" className="inline-block mb-6">
+              <img src={vroomoLogo} alt="VROOMO" className="h-16 w-auto brightness-0 invert" />
+            </Link>
+            <p className="text-accent-foreground/60 text-sm leading-relaxed mb-6">
+              Your trusted partner for on-road and off-road mechanic services. Available 24/7 across multiple cities in India.
             </p>
+            <div className="flex items-center gap-3">
+              <a 
+                href="https://instagram.com/mr.sach_in_" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-xl bg-accent-foreground/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+              >
+                <Instagram size={20} />
+              </a>
+            </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-display text-xl uppercase tracking-wider mb-6">Quick Links</h4>
-            <ul className="space-y-3">
-              <li>
-                <Link to="/" className="text-accent-foreground/70 hover:text-primary transition-colors">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link to="/services" className="text-accent-foreground/70 hover:text-primary transition-colors">
-                  Our Services
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-accent-foreground/70 hover:text-primary transition-colors">
-                  Contact Us
-                </Link>
-              </li>
-              <li>
-                <Link to="/signup" className="text-accent-foreground/70 hover:text-primary transition-colors">
-                  Register
-                </Link>
-              </li>
+            <h4 className="font-display text-lg uppercase tracking-wider mb-6 text-accent-foreground">
+              Quick Links
+            </h4>
+            <ul className="space-y-4">
+              {[
+                { name: "Home", path: "/" },
+                { name: "Our Services", path: "/services" },
+                { name: "Contact Us", path: "/contact" },
+                { name: "Register", path: "/signup" },
+              ].map((link) => (
+                <li key={link.name}>
+                  <Link 
+                    to={link.path} 
+                    className="group flex items-center gap-2 text-accent-foreground/60 hover:text-primary transition-colors"
+                  >
+                    {link.name}
+                    <ArrowUpRight size={14} className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Services */}
           <div>
-            <h4 className="font-display text-xl uppercase tracking-wider mb-6">Services</h4>
-            <ul className="space-y-3">
-              <li className="text-accent-foreground/70">Engine Repair</li>
-              <li className="text-accent-foreground/70">Tyre Services</li>
-              <li className="text-accent-foreground/70">Battery Replacement</li>
-              <li className="text-accent-foreground/70">Towing Service</li>
-              <li className="text-accent-foreground/70">Replacement Vehicles</li>
+            <h4 className="font-display text-lg uppercase tracking-wider mb-6 text-accent-foreground">
+              Services
+            </h4>
+            <ul className="space-y-4">
+              {[
+                "Engine Repair",
+                "Tyre Services",
+                "Battery Replacement",
+                "Towing Service",
+                "Replacement Vehicles",
+              ].map((service) => (
+                <li key={service} className="text-accent-foreground/60 text-sm">
+                  {service}
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Contact Info */}
           <div>
-            <h4 className="font-display text-xl uppercase tracking-wider mb-6">Contact Us</h4>
+            <h4 className="font-display text-lg uppercase tracking-wider mb-6 text-accent-foreground">
+              Contact Us
+            </h4>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
-                <MapPin size={20} className="text-primary mt-0.5 flex-shrink-0" />
-                <span className="text-accent-foreground/70 text-sm">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <MapPin size={18} className="text-primary" />
+                </div>
+                <span className="text-accent-foreground/60 text-sm pt-2">
                   Giridih, Jharkhand, India
                 </span>
               </li>
               <li>
-                <a href="tel:7488768874" className="flex items-center gap-3 text-accent-foreground/70 hover:text-primary transition-colors">
-                  <Phone size={20} className="text-primary" />
-                  <span>7488768874</span>
+                <a href="tel:7488768874" className="flex items-center gap-3 group">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary transition-colors">
+                    <Phone size={18} className="text-primary group-hover:text-primary-foreground transition-colors" />
+                  </div>
+                  <span className="text-accent-foreground/60 group-hover:text-primary transition-colors">
+                    7488768874
+                  </span>
                 </a>
               </li>
               <li>
-                <a href="mailto:rsachin7632@gmail.com" className="flex items-center gap-3 text-accent-foreground/70 hover:text-primary transition-colors">
-                  <Mail size={20} className="text-primary" />
-                  <span className="text-sm">rsachin7632@gmail.com</span>
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="https://instagram.com/mr.sach_in_" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 text-accent-foreground/70 hover:text-primary transition-colors"
-                >
-                  <Instagram size={20} className="text-primary" />
-                  <span>@mr.sach_in_</span>
+                <a href="mailto:rsachin7632@gmail.com" className="flex items-center gap-3 group">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary transition-colors">
+                    <Mail size={18} className="text-primary group-hover:text-primary-foreground transition-colors" />
+                  </div>
+                  <span className="text-accent-foreground/60 text-sm group-hover:text-primary transition-colors">
+                    rsachin7632@gmail.com
+                  </span>
                 </a>
               </li>
             </ul>
@@ -92,15 +114,15 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-accent-foreground/10 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-accent-foreground/50 text-sm">
+        <div className="border-t border-accent-foreground/10 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-accent-foreground/40 text-sm">
             © {new Date().getFullYear()} VROOMO. All rights reserved.
           </p>
-          <div className="flex items-center gap-6">
-            <Link to="/privacy" className="text-accent-foreground/50 text-sm hover:text-primary transition-colors">
+          <div className="flex items-center gap-8">
+            <Link to="/privacy" className="text-accent-foreground/40 text-sm hover:text-primary transition-colors">
               Privacy Policy
             </Link>
-            <Link to="/terms" className="text-accent-foreground/50 text-sm hover:text-primary transition-colors">
+            <Link to="/terms" className="text-accent-foreground/40 text-sm hover:text-primary transition-colors">
               Terms of Service
             </Link>
           </div>
