@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, MapPin, Clock, CheckCircle, XCircle, Wrench, User, Phone, AlertCircle } from "lucide-react";
+import { Bell, MapPin, Clock, CheckCircle, XCircle, Wrench, User, Phone, AlertCircle, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,6 +31,11 @@ interface Notification {
   request_id: string | null;
 }
 
+interface ReviewStats {
+  averageRating: number;
+  totalReviews: number;
+}
+
 const MechanicDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -40,6 +45,7 @@ const MechanicDashboard = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [activeTab, setActiveTab] = useState<"pending" | "accepted" | "completed">("pending");
   const [isVerified, setIsVerified] = useState<boolean | null>(null);
+  const [reviewStats, setReviewStats] = useState<ReviewStats>({ averageRating: 0, totalReviews: 0 });
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || userRole !== "mechanic")) {
@@ -51,6 +57,7 @@ const MechanicDashboard = () => {
       fetchMechanicProfile();
       fetchRequests();
       fetchNotifications();
+      fetchReviewStats();
       
       // Subscribe to realtime notifications
       const channel = supabase
@@ -89,6 +96,22 @@ const MechanicDashboard = () => {
       .maybeSingle();
     
     setIsVerified(data?.is_verified ?? false);
+  };
+
+  const fetchReviewStats = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("reviews" as any)
+      .select("rating")
+      .eq("mechanic_id", user.id) as any;
+    
+    if (data && data.length > 0) {
+      const total = (data as { rating: number }[]).reduce((sum, r) => sum + r.rating, 0);
+      setReviewStats({
+        averageRating: total / data.length,
+        totalReviews: data.length,
+      });
+    }
   };
 
   const fetchRequests = async () => {
@@ -235,6 +258,25 @@ const MechanicDashboard = () => {
               <p className="text-muted-foreground">
                 View and respond to customer service requests
               </p>
+              {reviewStats.totalReviews > 0 && (
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="flex">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`h-4 w-4 ${
+                          star <= Math.round(reviewStats.averageRating)
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-muted-foreground"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {reviewStats.averageRating.toFixed(1)} ({reviewStats.totalReviews} reviews)
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Notification Bell */}
