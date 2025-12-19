@@ -53,9 +53,9 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         vroomo: {
-          red: "hsl(var(--vroomo-red))",
-          "red-light": "hsl(var(--vroomo-red-light))",
-          "red-dark": "hsl(var(--vroomo-red-dark))",
+          blue: "hsl(var(--vroomo-blue))",
+          "blue-light": "hsl(var(--vroomo-blue-light))",
+          "blue-dark": "hsl(var(--vroomo-blue-dark))",
           black: "hsl(var(--vroomo-black))",
           gray: "hsl(var(--vroomo-gray))",
           "gray-light": "hsl(var(--vroomo-gray-light))",

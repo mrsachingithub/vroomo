@@ -34,7 +34,7 @@ const VehicleTypes = () => {
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[150px] -translate-y-1/2 translate-x-1/2" />
       
       <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center mb-16 max-w-3xl mx-auto">
+        <div className="text-center mb-12 max-w-3xl mx-auto">
           <span className="badge-premium mb-4 inline-block">
             All Vehicle Types
           </span>

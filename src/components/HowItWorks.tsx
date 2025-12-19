@@ -34,7 +34,7 @@ const HowItWorks = () => {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-primary/5 rounded-full blur-[150px] pointer-events-none" />
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center mb-20 max-w-3xl mx-auto">
+        <div className="text-center mb-14 max-w-3xl mx-auto">
           <span className="badge-premium mb-4 inline-block">
             Simple Process
           </span>
