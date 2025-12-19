@@ -48,9 +48,7 @@ const Navbar = () => {
             <img 
               src={vroomoLogo} 
               alt="VROOMO" 
-              className={`h-12 w-auto transition-all duration-300 group-hover:scale-105 ${
-                !scrolled ? "brightness-0 invert" : ""
-              }`} 
+              className="h-12 w-auto transition-all duration-300 group-hover:scale-105" 
             />
           </Link>
 
